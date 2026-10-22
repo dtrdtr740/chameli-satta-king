@@ -33,7 +33,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <div className="brand-band">
         <Link href="/" className="brand-link">
           {logo ? <img src={logo} alt="" width={56} height={56} /> : null}
-          <span className="blink">{settings.brand_text || settings.site_name}</span>
+          <span>{settings.brand_text || settings.site_name}</span>
         </Link>
       </div>
 
