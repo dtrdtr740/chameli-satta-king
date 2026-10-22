@@ -1,0 +1,18 @@
+import { NextResponse, type NextRequest } from 'next/server';
+import { SESSION_COOKIE, verifySession } from './lib/session';
+
+// Fast gate for /admin; pages still check permissions server-side.
+export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+  if (pathname === '/admin/login') return NextResponse.next();
+  const uid = await verifySession(req.cookies.get(SESSION_COOKIE)?.value);
+  if (!uid) {
+    const url = req.nextUrl.clone();
+    url.pathname = '/admin/login';
+    url.search = '';
+    return NextResponse.redirect(url);
+  }
+  return NextResponse.next();
+}
+
+export const config = { matcher: ['/admin', '/admin/:path*'] };

@@ -1,0 +1,35 @@
+# Render Blueprint: Dashboard -> New -> Blueprint -> pick this repo.
+# The database lives outside Render (e.g. Aiven free MySQL); fill the DB_* values when Render asks.
+services:
+  - type: web
+    name: satta-next
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci && npm run build
+    # Schema updates are safe to re-run on every start (they only add what's missing).
+    startCommand: npm run db:migrate && npm start
+    healthCheckPath: /robots.txt
+    envVars:
+      - key: NODE_VERSION
+        value: 24.20.0
+      - key: NEXT_TELEMETRY_DISABLED
+        value: '1'
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_DATABASE
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_SSL
+        value: 'true'
+      - key: DB_TIMEZONE
+        value: '+00:00'
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: SITE_URL
+        sync: false
