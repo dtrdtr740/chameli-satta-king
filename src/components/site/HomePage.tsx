@@ -2,12 +2,13 @@ import Link from 'next/link';
 import { AdBox, getAds } from './Ads';
 import { AutoRefresh } from './AutoRefresh';
 import { BlogCards } from './BlogCards';
+import { WhatsAppChannel, WhatsAppContact } from './WhatsAppSection';
 import { latestPosts } from '@/lib/blog';
 import { LiveClock } from './LiveClock';
 import { CmsContent, SchemaMarkup } from './SchemaMarkup';
 import { getHomeData, type Game } from '@/lib/results';
 import { pageSeo, toMetadata } from '@/lib/seo';
-import { getSettings, uploadUrl } from '@/lib/settings';
+import { SETTING_DEFAULTS, getSettings, uploadUrl } from '@/lib/settings';
 import { MONTHS, formatTime12, padResult } from '@/lib/time';
 
 // Monthly chart split, same as the original site (18 games per table).
@@ -28,18 +29,16 @@ export async function homeMetadata(pageKey: string, path: string) {
   return toMetadata(await pageSeo(pageKey, path, FALLBACK));
 }
 
-const WHATSAPP_DEFAULT_TEXT = 'व्हाट्सएप पर सुपर फास्ट रिजल्ट देखने के लिए नीचे दिए गए लिंक पर जाएं और चैनल को फॉलो करें।';
-
 /**
  * Middle "Join WhatsApp" banner, same as the original: the middle ad's text (or the default line) plus a
  * button image. Uses the middle ad's link, else the WhatsApp channel URL from Site Settings; hidden when neither is set.
  */
-function WhatsAppBanner({ content, image, alt, link }: { content: string | null; image: string; alt: string; link: string | null }) {
+function WhatsAppBanner({ content, text, image, alt, link }: { content: string | null; text: string; image: string; alt: string; link: string | null }) {
   if (!link) return null;
   return (
     <section className="ad-wrap">
       <div className="ad-box middle">
-        {content ? <div dangerouslySetInnerHTML={{ __html: content }} /> : <span>{WHATSAPP_DEFAULT_TEXT}</span>}
+        {content ? <div dangerouslySetInnerHTML={{ __html: content }} /> : <span className="rv-ad-heading">{text}</span>}
         <a href={link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
           <span className="ad-img">
             <img src={image} alt={alt} width={159} height={55} loading="lazy" decoding="async" />
@@ -72,6 +71,8 @@ export async function HomePage({ pageKey, path }: { pageKey: string; path: strin
       <AutoRefresh seconds={60} />
       <SchemaMarkup markup={seo.schema} />
 
+      {/* Permanent WhatsApp channel banner (Site Settings), then any real top ads. */}
+      <WhatsAppChannel settings={settings} />
       {ads.top.map((ad) => (
         <AdBox key={ad.id} ad={ad} fallbackLink={channel} />
       ))}
@@ -93,9 +94,12 @@ export async function HomePage({ pageKey, path }: { pageKey: string; path: strin
         )}
       </section>
 
+      {/* Permanent WhatsApp number banner (Site Settings), then any real bottom ad. */}
+      <WhatsAppContact settings={settings} />
       {ads.bottom ? <AdBox ad={ads.bottom} fallbackLink={channel} /> : null}
       <WhatsAppBanner
         content={ads.middle?.content ?? null}
+        text={settings.whatsapp_channel_text || SETTING_DEFAULTS.whatsapp_channel_text}
         image={uploadUrl(ads.middle?.image) ?? '/join-whatsapp.png'}
         alt={ads.middle?.title || 'Join WhatsApp'}
         link={ads.middle?.link || settings.whatsapp_channel_url || null}

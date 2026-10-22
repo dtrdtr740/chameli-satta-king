@@ -9,6 +9,7 @@ import { deleteUpload, saveImage } from '@/lib/uploads';
 const TEXT_KEYS: (keyof Settings)[] = [
   'site_name', 'brand_text', 'marquee_text', 'live_hint_text', 'whatsapp_number', 'whatsapp_channel_url',
   'footer_disclaimer', 'copyright_text', 'google_site_verification',
+  'whatsapp_channel_text', 'whatsapp_contact_text',
 ];
 
 async function saveSettings(fd: FormData) {
@@ -80,6 +81,12 @@ export default async function SettingsPage({ searchParams }: { searchParams: SP 
           </Field>
           <Field label="WhatsApp channel URL" htmlFor="whatsapp_channel_url" hint="Used for the middle banner when no middle ad is active.">
             <input id="whatsapp_channel_url" name="whatsapp_channel_url" className="input" defaultValue={s.whatsapp_channel_url} />
+          </Field>
+          <Field label="WhatsApp channel banner text" htmlFor="whatsapp_channel_text" hint="Shown above the Join Group button (top and middle banners).">
+            <textarea id="whatsapp_channel_text" name="whatsapp_channel_text" className="textarea" rows={2} defaultValue={s.whatsapp_channel_text} />
+          </Field>
+          <Field label="WhatsApp number banner text" htmlFor="whatsapp_contact_text" hint="Shown below the live results. {number} is replaced with the WhatsApp number.">
+            <input id="whatsapp_contact_text" name="whatsapp_contact_text" className="input" defaultValue={s.whatsapp_contact_text} />
           </Field>
           <Field label="Copyright text" htmlFor="copyright_text" hint="{year} and {site} are replaced.">
             <input id="copyright_text" name="copyright_text" className="input" defaultValue={s.copyright_text || SETTING_DEFAULTS.copyright_text} />

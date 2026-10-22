@@ -16,6 +16,8 @@ export type Settings = {
   logo: string;
   section_1_title: string;
   section_2_title: string;
+  whatsapp_channel_text: string;
+  whatsapp_contact_text: string;
 };
 
 export const SETTING_DEFAULTS: Settings = {
@@ -31,6 +33,8 @@ export const SETTING_DEFAULTS: Settings = {
   logo: '',
   section_1_title: '',
   section_2_title: '',
+  whatsapp_channel_text: 'व्हाट्सएप पर सुपर फास्ट रिजल्ट देखने के लिए नीचे दिए गए लिंक पर जाएं और चैनल को फॉलो करें।',
+  whatsapp_contact_text: 'WhatsApp: {number}',
 };
 
 export const getSettings = cache(async (): Promise<Settings> => {
