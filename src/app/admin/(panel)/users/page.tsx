@@ -8,20 +8,28 @@ import { query } from '@/lib/db';
 export default async function UsersPage({ searchParams }: { searchParams: SP }) {
   const me = await requirePermission('manage users');
   const sp = await searchParams;
-  const rows = await query<{ id: number; name: string; email: string; roles: string | null; games: number; perms: number; created_at: string }>(
-    `SELECT u.id, u.name, u.email, u.created_at,
-            (SELECT GROUP_CONCAT(r.name SEPARATOR ', ') FROM model_has_roles mr JOIN roles r ON r.id = mr.role_id
-              WHERE mr.model_id = u.id AND mr.model_type = ?) AS roles,
-            (SELECT COUNT(*) FROM game_user gu WHERE gu.user_id = u.id) AS games,
-            (SELECT COUNT(*) FROM (
-               SELECT rp.permission_id FROM role_has_permissions rp JOIN model_has_roles mr ON mr.role_id = rp.role_id
-                WHERE mr.model_id = u.id AND mr.model_type = ?
-               UNION
-               SELECT mp.permission_id FROM model_has_permissions mp WHERE mp.model_id = u.id AND mp.model_type = ?
-             ) p) AS perms
-       FROM users u ORDER BY u.name`,
-    [USER_MODEL_TYPE, USER_MODEL_TYPE, USER_MODEL_TYPE],
-  );
+  const [users, grants] = await Promise.all([
+    query<{ id: number; name: string; email: string; roles: string | null; games: number; created_at: string }>(
+      `SELECT u.id, u.name, u.email, u.created_at,
+              (SELECT GROUP_CONCAT(r.name SEPARATOR ', ') FROM model_has_roles mr JOIN roles r ON r.id = mr.role_id
+                WHERE mr.model_id = u.id AND mr.model_type = ?) AS roles,
+              (SELECT COUNT(*) FROM game_user gu WHERE gu.user_id = u.id) AS games
+         FROM users u ORDER BY u.name`,
+      [USER_MODEL_TYPE],
+    ),
+    // Role + direct permissions per user. Counted in JS: MariaDB (Hostinger) doesn't allow the outer
+    // user id inside a derived table, which the single-query version needed.
+    query<{ uid: number; pid: number }>(
+      `SELECT mr.model_id AS uid, rp.permission_id AS pid FROM model_has_roles mr
+         JOIN role_has_permissions rp ON rp.role_id = mr.role_id WHERE mr.model_type = ?
+       UNION
+       SELECT mp.model_id, mp.permission_id FROM model_has_permissions mp WHERE mp.model_type = ?`,
+      [USER_MODEL_TYPE, USER_MODEL_TYPE],
+    ),
+  ]);
+  const permCount = new Map<number, number>();
+  for (const g of grants) permCount.set(g.uid, (permCount.get(g.uid) ?? 0) + 1);
+  const rows = users.map((u) => ({ ...u, perms: permCount.get(u.id) ?? 0 }));
   return (
     <>
       <PageHead
