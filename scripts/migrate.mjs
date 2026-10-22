@@ -47,6 +47,17 @@ try {
 
 const db = await mysql.createConnection({ ...base, database: env.DB_DATABASE });
 await db.query(`SET time_zone = ?`, [base.timezone]);
+
+// SITE_KEY (e.g. "a7") gives this website its own copies of the per-site tables (a7_seo_pages, …) while
+// games/results/users stay shared. Same rule as src/lib/site.ts.
+const SITE_KEY = (env.SITE_KEY || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+const PREFIX = SITE_KEY ? `${SITE_KEY}_` : '';
+const SITE_TABLES = ['site_settings', 'seo_pages', 'blog_posts', 'advertisements', 'notices', 'whatsapp_sections', 'content_blocks', 'media'];
+const TABLE_RE = new RegExp(`\\b(FROM|INTO|UPDATE|JOIN|TABLE|EXISTS)(\\s+)(\`?)(${SITE_TABLES.join('|')})\\3(?![\\w.])`, 'gi');
+const rawQuery = db.query.bind(db);
+db.query = (sql, params) => rawQuery(PREFIX ? sql.replace(TABLE_RE, (_m, kw, sp, tick, t) => `${kw}${sp}${tick}${PREFIX}${t}${tick}`) : sql, params);
+const tableName = (t) => (SITE_TABLES.includes(t) ? `${PREFIX}${t}` : t);
+if (SITE_KEY) console.log(`Site "${SITE_KEY}": per-site tables use the prefix "${PREFIX}"`);
 console.log(`Connected to ${base.host}:${base.port}/${env.DB_DATABASE}`);
 
 const T = 'ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci';
@@ -222,7 +233,7 @@ const columns = [
 for (const [table, column, def] of columns) {
   const [rows] = await db.query(
     `SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
-    [table, column],
+    [tableName(table), column],
   );
   if (!rows.length) {
     await db.query(`ALTER TABLE \`${table}\` ADD COLUMN \`${column}\` ${def}`);
@@ -404,8 +415,8 @@ if (args.has('--seed')) {
   console.log(`Seeded ${SEO_SEED.length} SEO pages`);
 
   const SETTINGS = {
-    site_name: 'Satta King Live',
-    brand_text: 'SATTA KING LIVE',
+    site_name: env.SEED_SITE_NAME || 'Satta King Live',
+    brand_text: (env.SEED_SITE_NAME || 'Satta King Live').toUpperCase(),
     marquee_text:
       'satta king, gali satta, disawar satta, satta king gali disawar, satta king live result, satta chart, gali result, desawar result, faridabad result, ghaziabad result',
     live_hint_text: 'हा भाई यही आती हे सबसे पहले खबर रूको और देखो',
@@ -423,36 +434,7 @@ if (args.has('--seed')) {
   }
   console.log('Seeded site settings');
 
-  // Default ads, built like the original site's: a heading line plus a WhatsApp image in a pill.
-  // Top -> WhatsApp channel (Join WhatsApp image), bottom -> WhatsApp number (round WhatsApp logo).
-  const [[{ n: adCount }]] = await db.query(`SELECT COUNT(*) AS n FROM advertisements`);
-  if (adCount === 0) {
-    const number = SETTINGS.whatsapp_number;
-    const ads = [
-      [
-        'Join WhatsApp',
-        'top',
-        '<span class="rv-ad-heading">व्हाट्सएप पर सुपर फास्ट रिजल्ट देखने के लिए नीचे दिए गए लिंक पर जाएं और चैनल को फॉलो करें।</span>',
-        '/join-whatsapp.png',
-        SETTINGS.whatsapp_channel_url,
-      ],
-      [
-        'WhatsApp',
-        'bottom',
-        `<span class="rv-ad-heading">WhatsApp: +91 ${number.replace(/^91/, '')}</span>`,
-        '/whatsapp-logo.webp',
-        `https://wa.me/${number}`,
-      ],
-    ];
-    for (const ad of ads) {
-      await db.query(
-        `INSERT INTO advertisements (title, position, content, image, link, is_active, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, 1, NOW(), NOW())`,
-        ad,
-      );
-    }
-    console.log('Seeded WhatsApp advertisements');
-  }
+  // (WhatsApp banners are permanent WhatsApp Sections now, created above; no default ads.)
 
   // One sample post so the blog section (after the FAQ) is visible from the start. Only when the blog is empty.
   const [[{ n: postCount }]] = await db.query(`SELECT COUNT(*) AS n FROM blog_posts`);

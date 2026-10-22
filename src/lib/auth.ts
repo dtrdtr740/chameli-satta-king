@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { cache } from 'react';
 import { query, queryOne } from './db';
 import { SESSION_COOKIE, SESSION_TTL_SECONDS, signSession, verifySession } from './session';
+import { MANAGES_SHARED, SHARED_PERMISSIONS } from './site';
 
 // Spatie stores the morph class of the Laravel model.
 export const USER_MODEL_TYPE = 'App\\Models\\User';
@@ -77,6 +78,8 @@ export const getCurrentUser = cache(async (): Promise<AdminUser | null> => {
 });
 
 export function can(user: AdminUser | null, permission: string): boolean {
+  // Games, results, users and permissions are shared data, managed only on the main site.
+  if (!MANAGES_SHARED && SHARED_PERMISSIONS.has(permission)) return false;
   return !!user && (user.isSuperAdmin || user.permissions.has(permission));
 }
 

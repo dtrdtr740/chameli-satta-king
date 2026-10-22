@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Flash, PageHead, type SP } from '@/components/admin/ui';
 import { assignedGameIds, can, gameScope, requirePermission } from '@/lib/auth';
+import { MANAGES_SHARED } from '@/lib/site';
 import { query, queryOne } from '@/lib/db';
 import { DAY_MS, formatTime12, istDate, istToEpoch } from '@/lib/time';
 
@@ -51,6 +52,13 @@ export default async function Dashboard({ searchParams }: { searchParams: SP }) 
         }
       />
       <Flash sp={sp} />
+      {!MANAGES_SHARED ? (
+        <div className="flash ok">
+          This website shares its games and results with the main site. Add games and update results there; they
+          appear here automatically. SEO, page content, blog, ads, WhatsApp sections and settings here are only for
+          this website.
+        </div>
+      ) : null}
       <div className="grid grid-4" style={{ marginBottom: 16 }}>
         <div className="stat">
           <b>{games.length}</b>
