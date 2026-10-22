@@ -7,17 +7,18 @@ import { getActiveGames } from '@/lib/results';
 import { cookies } from 'next/headers';
 import { SESSION_COOKIE, verifySession } from '@/lib/session';
 import { fillPlaceholders, getSettings, uploadUrl } from '@/lib/settings';
+import { activeSection } from '@/lib/whatsapp';
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const [settings, games, loggedIn, notices] = await Promise.all([
+  const [settings, games, loggedIn, notices, waFloat] = await Promise.all([
     getSettings(),
     getActiveGames(),
     cookies().then((c) => verifySession(c.get(SESSION_COOKIE)?.value)).then((uid) => uid !== null),
     query<{ id: number; title: string | null; message: string | null }>(
       'SELECT id, title, message FROM notices WHERE is_active = 1 ORDER BY id DESC LIMIT 5',
     ),
+    activeSection('floating'),
   ]);
-  const wa = settings.whatsapp_number.replace(/[^\d]/g, '');
   const logo = uploadUrl(settings.logo);
 
   return (
@@ -64,9 +65,10 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       </footer>
 
       <div className="floaters">
-        {wa ? (
-          <a className="wa-logo" href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
-            <img src="/whatsapp-logo.webp" alt="WhatsApp" width={80} height={80} loading="lazy" decoding="async" />
+        {/* Floating WhatsApp button: Admin -> WhatsApp Sections -> Floating button. */}
+        {waFloat ? (
+          <a className="wa-logo" href={waFloat.link ?? '#'} target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
+            <img src={uploadUrl(waFloat.image) ?? '/whatsapp-logo.webp'} alt="WhatsApp" width={80} height={80} loading="lazy" decoding="async" />
           </a>
         ) : null}
         <RefreshButton />

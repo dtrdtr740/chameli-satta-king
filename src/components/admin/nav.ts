@@ -27,6 +27,7 @@ export const ADMIN_NAV: NavGroup[] = [
       { href: '/admin/blog', label: 'Blog', icon: '📝', perm: 'manage blog', isNew: true },
       { href: '/admin/seo-pages', label: 'SEO Pages', icon: '🌐', perm: 'manage seo pages' },
       { href: '/admin/content-blocks', label: 'Content Blocks', icon: '📄', perm: 'manage content blocks' },
+      { href: '/admin/whatsapp-sections', label: 'WhatsApp Sections', icon: '💬', perm: 'manage whatsapp sections', isNew: true },
       { href: '/admin/advertisements', label: 'Advertisements', icon: '📣', perm: 'manage advertisements' },
       { href: '/admin/notices', label: 'Notices', icon: '🔔', perm: 'manage notices' },
     ],

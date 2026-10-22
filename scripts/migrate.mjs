@@ -183,6 +183,15 @@ const tables = [
     published_at DATETIME NULL,
     ${ts},
     KEY blog_posts_published_index (is_published, published_at)) ${T}`,
+  `CREATE TABLE IF NOT EXISTS whatsapp_sections (
+    slot VARCHAR(30) NOT NULL PRIMARY KEY,
+    title VARCHAR(255) NULL,
+    content LONGTEXT NULL,
+    image VARCHAR(255) NULL,
+    link VARCHAR(500) NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    sort_order INT NOT NULL DEFAULT 0,
+    ${ts}) ${T}`,
   `CREATE TABLE IF NOT EXISTS media (
     path VARCHAR(255) NOT NULL PRIMARY KEY,
     mime VARCHAR(50) NOT NULL,
@@ -277,10 +286,39 @@ if (removed.affectedRows) console.log(`- removed ${removed.affectedRows} unused 
   if (moved) console.log(`Copied ${moved} uploaded image(s) from disk into the database`);
 }
 
+// The 4 fixed WhatsApp slots (managed in Admin -> WhatsApp Sections). Created once, from the current
+// Site Settings, so existing sites keep showing exactly what they showed before.
+{
+  const [rows] = await db.query('SELECT `key`, `value` FROM site_settings');
+  const s = Object.fromEntries(rows.map((r) => [r.key, r.value ?? '']));
+  const channel = s.whatsapp_channel_url || 'https://www.whatsapp.com/channel/0029Vb67katLikgE57Pwhj0T';
+  const number = (s.whatsapp_number || '918168973121').replace(/[^\d]/g, '');
+  const shown = number.startsWith('91') && number.length === 12 ? `+91 ${number.slice(2)}` : `+${number}`;
+  const channelText =
+    s.whatsapp_channel_text || 'व्हाट्सएप पर सुपर फास्ट रिजल्ट देखने के लिए नीचे दिए गए लिंक पर जाएं और चैनल को फॉलो करें।';
+  const contactText = (s.whatsapp_contact_text || 'WhatsApp: {number}').replace('{number}', shown);
+  const slots = [
+    ['top', 'Top banner (under the logo)', `<p>${channelText}</p>`, '/join-whatsapp.png', channel, 1],
+    ['after_live', 'Below live results', `<p>${contactText}</p>`, '/whatsapp-logo.webp', `https://wa.me/${number}`, 2],
+    ['middle', 'Middle banner', `<p>${channelText}</p>`, '/join-whatsapp.png', channel, 3],
+    ['floating', 'Floating button (bottom right) + Contact page', '', '/whatsapp-logo.webp', `https://wa.me/${number}`, 4],
+  ];
+  let added = 0;
+  for (const [slot, title, content, image, link, order] of slots) {
+    const [r] = await db.query(
+      `INSERT IGNORE INTO whatsapp_sections (slot, title, content, image, link, is_active, sort_order, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, 1, ?, NOW(), NOW())`,
+      [slot, title, content, image, link, order],
+    );
+    added += r.affectedRows;
+  }
+  if (added) console.log(`Created ${added} WhatsApp section(s)`);
+}
+
 console.log('Schema ready.');
 
 if (args.has('--seed')) {
-  const PERMISSIONS = [...Object.values(PERMISSION_RENAMES), 'manage blog'];
+  const PERMISSIONS = [...Object.values(PERMISSION_RENAMES), 'manage blog', 'manage whatsapp sections'];
   for (const name of PERMISSIONS) {
     await db.query(
       `INSERT IGNORE INTO permissions (name, guard_name, created_at, updated_at) VALUES (?, 'web', NOW(), NOW())`,
@@ -312,7 +350,7 @@ if (args.has('--seed')) {
   // Permissions added after the admin role was set up: give them to "admin" once.
   await db.query(
     `INSERT IGNORE INTO role_has_permissions (permission_id, role_id)
-     SELECT id, ? FROM permissions WHERE guard_name = 'web' AND name IN ('manage blog')`,
+     SELECT id, ? FROM permissions WHERE guard_name = 'web' AND name IN ('manage blog', 'manage whatsapp sections')`,
     [adminRole.id],
   );
 
