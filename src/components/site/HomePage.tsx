@@ -94,13 +94,13 @@ export async function HomePage({ pageKey, path }: { pageKey: string; path: strin
         <p className="scroll-hint">मोबाइल पर पूरा चार्ट देखने के लिए left-right scroll करें</p>
       </div>
 
-      {/* This site's featured game (Admin -> Site Settings): its result and full yearly chart. */}
+      {/* This site's featured game (Admin -> Site Settings): its full yearly chart. Its today/yesterday
+          result is in the main table above, like every other game. */}
       {featured ? (
         <section id={FEATURED_ANCHOR} className="section" aria-labelledby="featured-heading">
           <h2 id="featured-heading" className="band-title">
             {featured.game.name} Result Chart {year}
           </h2>
-          <ResultTable games={[featured.game]} data={data} settings={settings} />
           <YearChart year={Number(year)} grid={featured.grid} />
         </section>
       ) : null}
