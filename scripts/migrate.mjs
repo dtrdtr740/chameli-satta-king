@@ -212,6 +212,19 @@ const tables = [
     \`key\` VARCHAR(100) NOT NULL PRIMARY KEY,
     \`value\` LONGTEXT NULL,
     updated_at TIMESTAMP NULL) ${T}`,
+  // Logout revocation and login throttling (shared by all sites; also created on first use by src/lib/authTables.ts).
+  `CREATE TABLE IF NOT EXISTS revoked_sessions (
+    jti CHAR(32) NOT NULL PRIMARY KEY,
+    expires_at BIGINT NOT NULL,
+    KEY revoked_sessions_expires_index (expires_at)) ${T}`,
+  `CREATE TABLE IF NOT EXISTS login_attempts (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    ip VARCHAR(45) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    attempted_at BIGINT NOT NULL,
+    KEY login_attempts_ip_index (ip, attempted_at),
+    KEY login_attempts_email_ip_index (email, ip, attempted_at),
+    KEY login_attempts_time_index (attempted_at)) ${T}`,
 ];
 
 for (const sql of tables) await db.query(sql);

@@ -11,6 +11,21 @@ const nextConfig = {
   outputFileTracingExcludes: {
     '*': ['.netlify/**', '.git/**'],
   },
+  // Stop other sites from framing pages (clickjacking on the admin). The CSP is limited to directives
+  // that can't break Next's inline scripts, TinyMCE or third-party ad scripts.
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'Content-Security-Policy', value: "frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'" },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

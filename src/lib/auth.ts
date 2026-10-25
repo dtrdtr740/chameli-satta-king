@@ -3,7 +3,8 @@ import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
-import { query, queryOne } from './db';
+import { ensureAuthTables } from './authTables';
+import { execute, query, queryOne } from './db';
 import { SESSION_COOKIE, SESSION_TTL_SECONDS, signSession, verifySession } from './session';
 import { MANAGES_SHARED, SHARED_PERMISSIONS } from './site';
 
@@ -40,13 +41,24 @@ export async function startSession(userId: number) {
   });
 }
 
+/** Logs out and revokes this token, so a copied cookie stops working too (not just this browser). */
 export async function endSession() {
-  (await cookies()).delete(SESSION_COOKIE);
+  const store = await cookies();
+  const session = await verifySession(store.get(SESSION_COOKIE)?.value);
+  if (session) {
+    await ensureAuthTables();
+    await execute('INSERT IGNORE INTO revoked_sessions (jti, expires_at) VALUES (?, ?)', [session.jti, session.exp]);
+    await execute('DELETE FROM revoked_sessions WHERE expires_at < ?', [Math.floor(Date.now() / 1000)]);
+  }
+  store.delete(SESSION_COOKIE);
 }
 
 export const getCurrentUser = cache(async (): Promise<AdminUser | null> => {
-  const uid = await verifySession((await cookies()).get(SESSION_COOKIE)?.value);
-  if (!uid) return null;
+  const session = await verifySession((await cookies()).get(SESSION_COOKIE)?.value);
+  if (!session) return null;
+  await ensureAuthTables();
+  if (await queryOne('SELECT 1 FROM revoked_sessions WHERE jti = ?', [session.jti])) return null;
+  const uid = session.uid;
   const user = await queryOne<{ id: number; name: string; email: string }>(
     'SELECT id, name, email FROM users WHERE id = ?',
     [uid],

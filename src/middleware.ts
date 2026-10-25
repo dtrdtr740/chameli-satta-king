@@ -5,8 +5,8 @@ import { SESSION_COOKIE, verifySession } from './lib/session';
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   if (pathname === '/admin/login') return NextResponse.next();
-  const uid = await verifySession(req.cookies.get(SESSION_COOKIE)?.value);
-  if (!uid) {
+  const session = await verifySession(req.cookies.get(SESSION_COOKIE)?.value);
+  if (!session) {
     const url = req.nextUrl.clone();
     url.pathname = '/admin/login';
     url.search = '';
