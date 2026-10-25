@@ -6,7 +6,9 @@ import { execute, queryOne } from './db';
 
 // Uploads are stored in the `media` table so they survive hosts with a throw-away disk (Render, Railway…).
 // Files that were saved on disk before this change are still served from UPLOAD_DIR as a fallback.
-export const UPLOAD_ROOT = path.resolve(process.cwd(), process.env.UPLOAD_DIR || './storage/uploads');
+// path.resolve() of a relative path already uses the working directory. Passing process.cwd() explicitly
+// made Next's file tracing copy the whole project (.git, .env files…) into the server function.
+export const UPLOAD_ROOT = path.resolve(process.env.UPLOAD_DIR || './storage/uploads');
 
 const ALLOWED: Record<string, string> = {
   'image/png': 'png',

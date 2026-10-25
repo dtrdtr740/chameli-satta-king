@@ -8,8 +8,10 @@ const nextConfig = {
   // whole folder (including Netlify's old build output in .netlify) into the server function and blow
   // Netlify's 250 MB limit. Next matches these patterns anywhere in a path, so keep them specific:
   // e.g. 'storage/**' would also drop node_modules/next/dist/server/async-storage and crash every page.
+  // The route key must be '**': '*' does not match routes with a slash (e.g. /api/admin/upload), so the
+  // rule silently never applied. .env files must never ship inside the function either.
   outputFileTracingExcludes: {
-    '*': ['.netlify/**', '.git/**'],
+    '**': ['.netlify/**', '.git/**', '.env*', 'QA_BRIEF.md'],
   },
   // Stop other sites from framing pages (clickjacking on the admin). The CSP is limited to directives
   // that can't break Next's inline scripts, TinyMCE or third-party ad scripts.
