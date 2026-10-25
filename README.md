@@ -1,6 +1,17 @@
-# satta-next
+# Chameli Satta King
+
+Website code for **Chameli Satta King** — https://chamelisattaking.netlify.app (Netlify site `chamelisattaking`).
+
+This is the **main site**: it has no `SITE_KEY`, and its admin manages the games, results (incl. Excel import),
+users, roles and permissions, plus its own SEO, content, blog, ads, WhatsApp sections and settings.
+Site Settings → *Featured game* is set to **Chameli Bazar** (its yearly chart is shown on the home page).
 
 Next.js 15 rebuild of the Laravel `realsata` / `super_7` result sites: same public pages and admin features, a faster navigation bar, and a new **SEO & Content** admin section.
+
+## Netlify settings (Site configuration → Environment variables)
+
+`DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`, `DB_SSL=true`, `DB_TIMEZONE=+00:00`,
+`AUTH_SECRET`, `SITE_URL=https://chamelisattaking.netlify.app`. **No `SITE_KEY`.**
 
 ## Run locally
 
