@@ -23,7 +23,12 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="site">
-      <SiteNav games={games.map((g) => ({ name: g.name, href: gameHref(g.slug, settings) }))} loggedIn={loggedIn} />
+      <SiteNav
+        games={games.map((g) => ({ name: g.name, href: gameHref(g.slug, settings) }))}
+        loggedIn={loggedIn}
+        logo={logo}
+        siteName={settings.site_name}
+      />
 
       {settings.marquee_text ? (
         <div className="marquee" aria-hidden="true">
@@ -33,7 +38,6 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
       <div className="brand-band">
         <Link href="/" className="brand-link">
-          {logo ? <img src={logo} alt="" width={56} height={56} /> : null}
           <span>{settings.brand_text || settings.site_name}</span>
         </Link>
       </div>

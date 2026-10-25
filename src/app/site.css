@@ -27,7 +27,10 @@
 
 /* ---------- Header / navigation (black pill buttons with a white border) ---------- */
 .site-header { background: #000; position: relative; z-index: 50; }
+.header-logo { display: block; width: 96px; height: 96px; margin: 0 auto; padding-top: 14px; box-sizing: content-box; }
+.header-logo img { width: 96px; height: 96px; object-fit: contain; border-radius: 50%; }
 .pill-nav { max-width: 1400px; margin: 0 auto; padding: 26px 16px 22px; }
+.header-logo + .pill-nav { padding-top: 14px; }
 .pill-nav > ul {
   list-style: none; margin: 0; padding: 0;
   display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 14px 10px;
@@ -79,7 +82,8 @@
 .notice-strip p { margin: 2px 0; }
 
 /* ---------- Ads ---------- */
-.ad-wrap { width: 100%; max-width: 1200px; margin: 12px auto; padding: 0 8px; }
+/* Full-width ad/WhatsApp boxes, as on the original site. */
+.ad-wrap { width: 100%; margin: 8px 0; padding: 0 4px; }
 .ad-box {
   display: block; text-decoration: none; color: #111;
   background: linear-gradient(180deg, var(--accent) 0%, var(--accent-faint) 100%);
@@ -104,15 +108,16 @@
 .section { max-width: 1200px; margin: 0 auto; padding: 0 8px; scroll-margin-top: 80px; }
 .table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .result-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 16px; }
-.result-table th, .result-table td { border: 1px solid #222; padding: 8px 6px; text-align: center; vertical-align: middle; }
+.result-table th, .result-table td { border: 1px solid #222; padding: 10px 6px; text-align: center; vertical-align: middle; }
 .result-table thead th { background: #000; color: #fff; font-size: 16px; }
 /* Cells get their own white background so rows don't show the peach page colour through. */
 .result-table tbody td { background: var(--card); }
 .result-table tbody tr:nth-child(even) td:not(.game-cell) { background: var(--accent-faint); }
 .result-table .game-cell { background: var(--accent); text-align: center; }
-.result-table .game-cell a { font-weight: 900; font-size: 17px; text-decoration: none; color: #000; }
+.result-table .game-cell a { font-weight: 800; font-size: 19px; text-decoration: none; color: #000; }
 .result-table .game-cell a:hover { text-decoration: underline; }
-.result-table .game-time { display: block; font-size: 12px; color: darkred; font-weight: 700; margin-top: 2px; }
+/* Bigger red time under the name, like the original site (#a30000 on light green: 6.4:1). */
+.result-table .game-time { display: block; font-size: 16px; color: #a30000; font-weight: 700; margin-top: 3px; }
 .result-table .num { font-weight: 900; font-size: 20px; }
 .wait-img { width: 40px; height: 40px; }
 

@@ -7,8 +7,18 @@ import { useEffect, useRef, useState } from 'react';
 type Item = { href: string; label: string };
 type Menu = { label: string; items: Item[] };
 
-/** Pill-button nav: HOME · CHART ▾ · OTHERS ▾ · CONTACT · LOGIN, dropdowns open on click/tap. */
-export function SiteNav({ games, loggedIn }: { games: { name: string; href: string }[]; loggedIn: boolean }) {
+/** Logo centred on top, then pill-button nav: HOME · CHART ▾ · OTHERS ▾ · CONTACT · LOGIN (dropdowns open on click/tap). */
+export function SiteNav({
+  games,
+  loggedIn,
+  logo,
+  siteName,
+}: {
+  games: { name: string; href: string }[];
+  loggedIn: boolean;
+  logo: string | null;
+  siteName: string;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState<string | null>(null);
   const navRef = useRef<HTMLElement>(null);
@@ -76,6 +86,11 @@ export function SiteNav({ games, loggedIn }: { games: { name: string; href: stri
 
   return (
     <header className="site-header">
+      {logo ? (
+        <Link href="/" className="header-logo" aria-label={`${siteName} home`}>
+          <img src={logo} alt={siteName} width={96} height={96} />
+        </Link>
+      ) : null}
       <nav className="pill-nav" aria-label="Main" ref={navRef}>
         <ul>
           <li>
