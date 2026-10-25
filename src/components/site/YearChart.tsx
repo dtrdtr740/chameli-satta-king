@@ -10,7 +10,11 @@ export function YearChart({ year, grid }: { year: number; grid: Record<number, R
           <tr>
             <th className="year">{year}</th>
             {MONTHS.map((m) => (
-              <th key={m}>{m}</th>
+              <th key={m}>
+                {/* Full name on wide screens, Jan/Feb/… on phones (see .m-full/.m-short in site.css). */}
+                <span className="m-full">{m}</span>
+                <span className="m-short">{m.slice(0, 3)}</span>
+              </th>
             ))}
           </tr>
         </thead>
