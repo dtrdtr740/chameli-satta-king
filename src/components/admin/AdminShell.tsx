@@ -22,7 +22,13 @@ export function AdminShell({
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [pathname]);
 
-  const isCurrent = (href: string) => (href === '/admin' ? pathname === '/admin' : pathname.startsWith(href));
+  // The longest matching link wins, so /admin/results/import highlights "Import Results", not "Game Results".
+  const matches = (href: string) => (href === '/admin' ? pathname === '/admin' : pathname === href || pathname.startsWith(`${href}/`));
+  const current = nav
+    .flatMap((g) => g.items.map((i) => i.href))
+    .filter(matches)
+    .sort((a, b) => b.length - a.length)[0];
+  const isCurrent = (href: string) => href === current;
 
   return (
     <div className="admin-shell" data-open={open}>

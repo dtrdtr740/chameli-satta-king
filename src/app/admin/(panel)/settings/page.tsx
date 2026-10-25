@@ -2,6 +2,7 @@ import { revalidatePath } from 'next/cache';
 import { Field, Flash, PageHead, type SP } from '@/components/admin/ui';
 import { requirePermission } from '@/lib/auth';
 import { execute } from '@/lib/db';
+import { getActiveGames } from '@/lib/results';
 import { bool, done, fail, str } from '@/lib/form';
 import { SETTING_DEFAULTS, getSettings, uploadUrl, type Settings } from '@/lib/settings';
 import { deleteUpload, saveImage } from '@/lib/uploads';
@@ -18,6 +19,9 @@ async function saveSettings(fd: FormData) {
   const values: Partial<Settings> = {};
   for (const k of TEXT_KEYS) values[k] = str(fd, k);
   if (!values.site_name) fail('/admin/settings', 'Site name is required');
+  const featured = str(fd, 'featured_game');
+  if (featured && !(await getActiveGames()).some((g) => g.slug === featured)) fail('/admin/settings', 'Choose an active game to feature');
+  values.featured_game = featured;
   try {
     const up = await saveImage(fd.get('logo'), 'branding');
     if (up || bool(fd, 'remove_logo')) {
@@ -39,7 +43,7 @@ async function saveSettings(fd: FormData) {
 
 export default async function SettingsPage({ searchParams }: { searchParams: SP }) {
   await requirePermission('manage site settings');
-  const [s, sp] = await Promise.all([getSettings(), searchParams]);
+  const [s, sp, games] = await Promise.all([getSettings(), searchParams, getActiveGames()]);
   const logo = uploadUrl(s.logo);
   return (
     <>
@@ -78,6 +82,20 @@ export default async function SettingsPage({ searchParams }: { searchParams: SP 
           </Field>
           <Field label="Google site verification code" htmlFor="google_site_verification">
             <input id="google_site_verification" name="google_site_verification" className="input" defaultValue={s.google_site_verification} />
+          </Field>
+          <Field
+            label="Featured game on home page"
+            htmlFor="featured_game"
+            hint="Shown in its own section with the full yearly chart after the monthly chart. On this website its record page then opens the home page section instead."
+          >
+            <select id="featured_game" name="featured_game" className="input" defaultValue={s.featured_game}>
+              <option value="">None</option>
+              {games.map((g) => (
+                <option key={g.id} value={g.slug}>
+                  {g.name}
+                </option>
+              ))}
+            </select>
           </Field>
         </div>
         <div className="form-actions">

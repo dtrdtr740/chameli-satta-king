@@ -23,7 +23,17 @@ export default async function GameForm({ params, searchParams }: { params: Promi
 
   return (
     <>
-      <PageHead title={game ? `Edit ${game.name}` : 'Add game'} />
+      <PageHead
+        title={game ? `Edit ${game.name}` : 'Add game'}
+        sub={game ? undefined : 'After saving you can upload the game’s previous results from Excel.'}
+        actions={
+          game ? (
+            <Link className="btn" href={`/admin/results/import?game=${game.id}`}>
+              ⬆ Upload old results (Excel)
+            </Link>
+          ) : undefined
+        }
+      />
       <Flash sp={sp} />
       <form action={saveGame} className="card">
         {game ? <input type="hidden" name="id" value={game.id} /> : null}

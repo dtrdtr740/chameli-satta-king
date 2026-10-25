@@ -17,6 +17,7 @@
   "dependencies": {
     "@tinymce/tinymce-react": "^6.3.1",
     "bcryptjs": "^3.0.3",
+    "exceljs": "^4.4.0",
     "jose": "^6.2.13",
     "mysql2": "^3.24.6",
     "next": "^15.5.28",

@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { useState } from 'react';
 
-export type ChartGame = { id: number; name: string; slug: string; years: number[] };
+// `links` holds the chart URL per year (built server-side, so the featured game can point at the home page).
+export type ChartGame = { id: number; name: string; years: number[]; links: Record<number, string> };
 
 export function ChartList({ games, currentYear }: { games: ChartGame[]; currentYear: number }) {
   const [q, setQ] = useState('');
@@ -30,12 +31,12 @@ export function ChartList({ games, currentYear }: { games: ChartGame[]; currentY
             const years = g.years.length ? g.years : [currentYear];
             return (
               <div className="chart-row" key={g.id}>
-                <Link className="name" href={`/records/${g.slug}`}>
+                <Link className="name" href={g.links[currentYear]}>
                   {g.name}
                 </Link>
                 <div className="years">
                   {years.map((y) => (
-                    <Link key={y} href={y === currentYear ? `/records/${g.slug}` : `/records/${g.slug}?year=${y}`}>
+                    <Link key={y} href={g.links[y]}>
                       {y}
                     </Link>
                   ))}

@@ -9,13 +9,13 @@ export const ADMIN_NAV: NavGroup[] = [
       { href: '/admin', label: 'Dashboard', icon: '🏠', perm: 'view dashboard' },
       { href: '/admin/today-update', label: 'Today Result Update', icon: '⚡', perm: 'update today results' },
       { href: '/admin/results', label: 'Game Results', icon: '📊', perm: 'manage game results' },
+      { href: '/admin/results/import', label: 'Import Results (Excel)', icon: '📥', perm: 'manage game results', isNew: true },
     ],
   },
   {
     heading: 'Games',
     items: [
       { href: '/admin/games', label: 'Games', icon: '🎯', perm: 'manage games' },
-      { href: '/admin/result-sections', label: 'Result Sections', icon: '🗂️', perm: 'manage games' },
       { href: '/admin/assign-games', label: 'Assign Games', icon: '👥', perm: 'assign games to users' },
       { href: '/admin/chart-years', label: 'Chart Years', icon: '📅', perm: 'manage chart years' },
     ],

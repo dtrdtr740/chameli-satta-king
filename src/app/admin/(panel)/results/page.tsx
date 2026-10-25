@@ -62,9 +62,14 @@ export default async function ResultsPage({ searchParams }: { searchParams: SP }
         title="Game Results"
         sub={`${total?.n ?? 0} results`}
         actions={
-          <Link className="btn btn-primary" href="/admin/results/new">
-            + Add result
-          </Link>
+          <>
+            <Link className="btn" href={gameId ? `/admin/results/import?game=${gameId}` : '/admin/results/import'}>
+              ⬆ Import from Excel
+            </Link>
+            <Link className="btn btn-primary" href="/admin/results/new">
+              + Add result
+            </Link>
+          </>
         }
       />
       <Flash sp={sp} />

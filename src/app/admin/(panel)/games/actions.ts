@@ -20,6 +20,7 @@ export async function saveGame(fd: FormData) {
   if (!slug) fail(back, 'Slug is required');
   if (time && !TIME_RE.test(time)) fail(back, 'Result time must be HH:MM');
   const values = [name, slug, time ? (time.length === 5 ? `${time}:00` : time) : null, bool(fd, 'is_active'), mins, sort];
+  let newId: number | null = null;
   try {
     if (id) {
       await execute(
@@ -27,17 +28,20 @@ export async function saveGame(fd: FormData) {
         [...values, id],
       );
     } else {
-      await execute(
+      const res = await execute(
         `INSERT INTO games (name, slug, result_time, is_active, default_show_minutes, sort_order, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
         values,
       );
+      newId = res.insertId;
     }
   } catch (e) {
     if (isDuplicate(e)) fail(back, `Slug "${slug}" is already used by another game`);
     throw e;
   }
   revalidatePath('/', 'layout');
+  // A new game usually has older results to bring in: offer the Excel import right away.
+  if (newId) done(`/admin/results/import?game=${newId}`, `${name} created. You can now upload its previous results (optional).`);
   done('/admin/games', 'Game saved.');
 }
 

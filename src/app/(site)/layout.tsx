@@ -6,7 +6,7 @@ import { query } from '@/lib/db';
 import { getActiveGames } from '@/lib/results';
 import { cookies } from 'next/headers';
 import { SESSION_COOKIE, verifySession } from '@/lib/session';
-import { fillPlaceholders, getSettings, uploadUrl } from '@/lib/settings';
+import { fillPlaceholders, gameHref, getSettings, uploadUrl } from '@/lib/settings';
 import { activeSection } from '@/lib/whatsapp';
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
@@ -23,7 +23,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="site">
-      <SiteNav games={games.map((g) => ({ name: g.name, slug: g.slug }))} loggedIn={loggedIn} />
+      <SiteNav games={games.map((g) => ({ name: g.name, href: gameHref(g.slug, settings) }))} loggedIn={loggedIn} />
 
       {settings.marquee_text ? (
         <div className="marquee" aria-hidden="true">

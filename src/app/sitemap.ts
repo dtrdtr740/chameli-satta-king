@@ -1,14 +1,14 @@
 import type { MetadataRoute } from 'next';
 import { latestPosts } from '@/lib/blog';
 import { getActiveGames } from '@/lib/results';
-import { siteUrl } from '@/lib/settings';
+import { getSettings, siteUrl } from '@/lib/settings';
 
 export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl();
   const now = new Date();
-  const games = await getActiveGames();
+  const [games, settings] = await Promise.all([getActiveGames(), getSettings()]);
   const pages: MetadataRoute.Sitemap = [
     { url: `${base}/`, lastModified: now, changeFrequency: 'always', priority: 1 },
     { url: `${base}/chart`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
@@ -19,6 +19,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/terms-conditions`, changeFrequency: 'yearly', priority: 0.3 },
   ];
   for (const g of games) {
+    // The featured game has no record page on this site (it is shown on the home page).
+    if (g.slug === settings.featured_game) continue;
     pages.push({ url: `${base}/records/${g.slug}`, lastModified: now, changeFrequency: 'daily', priority: 0.8 });
   }
   const posts = await latestPosts(1000);

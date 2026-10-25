@@ -14,8 +14,8 @@ export type Settings = {
   copyright_text: string;
   google_site_verification: string;
   logo: string;
-  section_1_title: string;
-  section_2_title: string;
+  /** Slug of a game shown in its own section (with the yearly chart) at the end of this site's home page. */
+  featured_game: string;
   whatsapp_channel_text: string;
   whatsapp_contact_text: string;
 };
@@ -31,8 +31,7 @@ export const SETTING_DEFAULTS: Settings = {
   copyright_text: '© {year} {site}. All Rights Reserved',
   google_site_verification: '',
   logo: '',
-  section_1_title: '',
-  section_2_title: '',
+  featured_game: '',
   whatsapp_channel_text: 'व्हाट्सएप पर सुपर फास्ट रिजल्ट देखने के लिए नीचे दिए गए लिंक पर जाएं और चैनल को फॉलो करें।',
   whatsapp_contact_text: 'WhatsApp: {number}',
 };
@@ -60,6 +59,14 @@ export function fillPlaceholders(text: string | null | undefined, settings: Sett
     ...Object.fromEntries(Object.entries(extra).map(([k, v]) => [k, String(v)])),
   };
   return text.replace(/\{(\w+)\}/g, (m, k) => (k in map ? map[k] : m));
+}
+
+export const FEATURED_ANCHOR = 'featured';
+
+/** Chart link for a game. The featured game has no record page on this site; it lives on the home page. */
+export function gameHref(slug: string, settings: Settings, year?: number): string {
+  if (settings.featured_game && slug === settings.featured_game) return `/#${FEATURED_ANCHOR}`;
+  return year ? `/records/${slug}?year=${year}` : `/records/${slug}`;
 }
 
 export function uploadUrl(path: string | null | undefined): string | null {

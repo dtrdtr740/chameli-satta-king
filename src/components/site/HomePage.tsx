@@ -6,20 +6,12 @@ import { WhatsAppBanner } from './WhatsAppSection';
 import { latestPosts } from '@/lib/blog';
 import { LiveClock } from './LiveClock';
 import { CmsContent, SchemaMarkup } from './SchemaMarkup';
-import { getHomeData, type Game } from '@/lib/results';
+import { YearChart } from './YearChart';
+import { getHomeData, getYearGrid, type Game } from '@/lib/results';
 import { pageSeo, toMetadata } from '@/lib/seo';
-import { getSettings } from '@/lib/settings';
+import { FEATURED_ANCHOR, gameHref, getSettings, type Settings } from '@/lib/settings';
 import { activeSection } from '@/lib/whatsapp';
 import { MONTHS, formatTime12, padResult } from '@/lib/time';
-
-// Monthly chart split, same as the original site (18 games per table).
-const CHUNK = 18;
-
-function chunk<T>(items: T[], size: number): T[][] {
-  const out: T[][] = [];
-  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
-  return out;
-}
 
 const FALLBACK = {
   title: '{site} | Satta King Live Result Today',
@@ -48,6 +40,8 @@ export async function HomePage({ pageKey, path }: { pageKey: string; path: strin
   const [, month] = data.today.split('-').map(Number);
   const year = data.today.slice(0, 4);
   const hint = settings.live_hint_text;
+  const featuredGame = data.games.find((g) => settings.featured_game && g.slug === settings.featured_game);
+  const featured = featuredGame ? { game: featuredGame, grid: (await getYearGrid(featuredGame.id, Number(year))).grid } : null;
   // Real ads without their own link fall back to the WhatsApp channel.
   const channel = waTop?.link ?? waMiddle?.link ?? null;
 
@@ -85,30 +79,31 @@ export async function HomePage({ pageKey, path }: { pageKey: string; path: strin
       {ads.middle ? <AdBox ad={ads.middle} variant="middle" fallbackLink={channel} /> : null}
       {ads.sidebar ? <AdBox ad={ads.sidebar} fallbackLink={channel} /> : null}
 
-      {/* Today/yesterday results in two sections; which game goes where is set in Admin -> Result Sections. */}
+      {/* One today/yesterday table and one monthly chart for every game, in Admin -> Games order. */}
       <div id="today" className="section">
-        {[1, 2].map((n) => {
-          const games = data.games.filter((g) => (g.result_section === 2 ? 2 : 1) === n);
-          if (games.length === 0) return null;
-          const title = n === 1 ? settings.section_1_title : settings.section_2_title;
-          return (
-            <section key={n} className="result-section" aria-label={title || `Results section ${n}`}>
-              {title ? <h2 className="band-title">{title}</h2> : null}
-              <ResultTable games={games} data={data} />
-            </section>
-          );
-        })}
+        <section className="result-section" aria-label="Today and yesterday results">
+          <ResultTable games={data.games} data={data} settings={settings} />
+        </section>
       </div>
 
       <div id="monthly" className="section">
         <h2 className="band-title">
           {MONTHS[month - 1]} Result Chart {year}
         </h2>
-        {chunk(data.games, CHUNK).map((games, i) => (
-          <MonthTable key={i} games={games} data={data} />
-        ))}
+        <MonthTable games={data.games} data={data} />
         <p className="scroll-hint">मोबाइल पर पूरा चार्ट देखने के लिए left-right scroll करें</p>
       </div>
+
+      {/* This site's featured game (Admin -> Site Settings): its result and full yearly chart. */}
+      {featured ? (
+        <section id={FEATURED_ANCHOR} className="section" aria-labelledby="featured-heading">
+          <h2 id="featured-heading" className="band-title">
+            {featured.game.name} Result Chart {year}
+          </h2>
+          <ResultTable games={[featured.game]} data={data} settings={settings} />
+          <YearChart year={Number(year)} grid={featured.grid} />
+        </section>
+      ) : null}
 
       {/* Article + FAQ (editable in SEO & Content), then the latest blog posts. */}
       <CmsContent html={seo.content} />
@@ -130,7 +125,7 @@ export async function HomePage({ pageKey, path }: { pageKey: string; path: strin
   );
 }
 
-function ResultTable({ games, data }: { games: Game[]; data: Awaited<ReturnType<typeof getHomeData>> }) {
+function ResultTable({ games, data, settings }: { games: Game[]; data: Awaited<ReturnType<typeof getHomeData>>; settings: Settings }) {
   return (
     <div className="table-scroll">
       <table className="result-table">
@@ -148,7 +143,7 @@ function ResultTable({ games, data }: { games: Game[]; data: Awaited<ReturnType<
             return (
               <tr key={g.id}>
                 <td className="game-cell">
-                  <Link href={`/records/${g.slug}`} prefetch={false}>
+                  <Link href={gameHref(g.slug, settings)} prefetch={false}>
                     {g.name.toUpperCase()}
                   </Link>
                   {g.result_time ? <span className="game-time">{formatTime12(g.result_time)}</span> : null}

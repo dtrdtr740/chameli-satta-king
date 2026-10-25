@@ -1,10 +1,12 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { CmsContent, SchemaMarkup } from '@/components/site/SchemaMarkup';
+import { YearChart } from '@/components/site/YearChart';
 import { query } from '@/lib/db';
 import { getGameBySlug, getGameYears, getYearGrid } from '@/lib/results';
 import { getSeoByKey, getSeoForGame, resolveSeo, toMetadata } from '@/lib/seo';
-import { MONTHS, daysInMonth, istDate, istYear, padResult } from '@/lib/time';
+import { gameHref, getSettings } from '@/lib/settings';
+import { istYear } from '@/lib/time';
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ year?: string }> };
 
@@ -35,7 +37,9 @@ export async function generateMetadata({ params, searchParams }: Props) {
 }
 
 export default async function RecordPage({ params, searchParams }: Props) {
-  const [{ slug }, sp] = await Promise.all([params, searchParams]);
+  const [{ slug }, sp, settings] = await Promise.all([params, searchParams, getSettings()]);
+  // This site's featured game is shown on the home page instead of a record page.
+  if (settings.featured_game && slug === settings.featured_game) redirect(gameHref(slug, settings));
   const year = pickYear(sp.year);
   const data = await load(slug, year);
   if (!data) notFound();
@@ -53,7 +57,6 @@ export default async function RecordPage({ params, searchParams }: Props) {
   const thisYear = istYear();
   // Keep the requested year as a tab even if it's hidden/empty, so the visitor can see where they are.
   const years = [...new Set([...(gameYears.get(game.id) ?? [thisYear]), year])].sort((a, b) => b - a);
-  const today = istDate();
 
   return (
     <div className="section">
@@ -76,36 +79,7 @@ export default async function RecordPage({ params, searchParams }: Props) {
         </nav>
       )}
 
-      <div className="table-scroll">
-        <table className="record-table">
-          <thead>
-            <tr>
-              <th className="year">{year}</th>
-              {MONTHS.map((m) => (
-                <th key={m}>{m}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-              <tr key={day}>
-                <td className="day">{String(day).padStart(2, '0')}</td>
-                {MONTHS.map((_, mi) => {
-                  const month = mi + 1;
-                  if (day > daysInMonth(year, month)) return <td key={mi} className="na" />;
-                  const v = grid[day]?.[month];
-                  const date = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                  return (
-                    <td key={mi} className={v ? 'has' : undefined}>
-                      {v ? padResult(v) : date > today ? '' : '-'}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <YearChart year={year} grid={grid} />
 
       <CmsContent html={seo.content} />
 

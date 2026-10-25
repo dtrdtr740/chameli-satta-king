@@ -8,7 +8,7 @@ type Item = { href: string; label: string };
 type Menu = { label: string; items: Item[] };
 
 /** Pill-button nav: HOME · CHART ▾ · OTHERS ▾ · CONTACT · LOGIN, dropdowns open on click/tap. */
-export function SiteNav({ games, loggedIn }: { games: { name: string; slug: string }[]; loggedIn: boolean }) {
+export function SiteNav({ games, loggedIn }: { games: { name: string; href: string }[]; loggedIn: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = useState<string | null>(null);
   const navRef = useRef<HTMLElement>(null);
@@ -29,7 +29,7 @@ export function SiteNav({ games, loggedIn }: { games: { name: string; slug: stri
 
   const chart: Menu = {
     label: 'Chart',
-    items: [{ href: '/chart', label: 'All Charts' }, ...games.map((g) => ({ href: `/records/${g.slug}`, label: `${g.name} Chart` }))],
+    items: [{ href: '/chart', label: 'All Charts' }, ...games.map((g) => ({ href: g.href, label: `${g.name} Chart` }))],
   };
   const others: Menu = {
     label: 'Others',
