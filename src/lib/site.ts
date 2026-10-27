@@ -28,3 +28,12 @@ export const SHARED_PERMISSIONS = new Set([
   'update today results', 'manage game results', 'manage games', 'assign games to users', 'manage chart years',
   'manage users', 'manage roles', 'manage permissions',
 ]);
+
+/**
+ * Colour theme of the public site. '' = default warm theme (Chameli); 'blue' = A7 Satta Wala.
+ * Set SITE_THEME=blue on a Netlify site to force it; A7 is also recognised by SITE_KEY=a7 or an a7sattawala SITE_URL.
+ */
+export const SITE_THEME: '' | 'blue' =
+  process.env.SITE_THEME?.trim().toLowerCase() === 'blue' || SITE_KEY === 'a7' || /a7sattawala/i.test(process.env.SITE_URL || '')
+    ? 'blue'
+    : '';

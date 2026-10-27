@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { getSettings, siteUrl, uploadUrl } from '@/lib/settings';
+import { SITE_THEME } from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#000000' };
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: SITE_THEME === 'blue' ? '#111827' : '#2C2A29' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

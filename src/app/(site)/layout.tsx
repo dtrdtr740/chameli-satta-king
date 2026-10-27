@@ -8,6 +8,7 @@ import { cookies } from 'next/headers';
 import { SESSION_COOKIE, verifySession } from '@/lib/session';
 import { fillPlaceholders, gameHref, getSettings, uploadUrl } from '@/lib/settings';
 import { activeSection } from '@/lib/whatsapp';
+import { SITE_THEME } from '@/lib/site';
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const [settings, games, loggedIn, notices, waFloat] = await Promise.all([
@@ -22,7 +23,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const logo = uploadUrl(settings.logo);
 
   return (
-    <div className="site">
+    <div className="site" data-theme={SITE_THEME || undefined}>
       <SiteNav games={games.map((g) => ({ name: g.name, href: gameHref(g.slug, settings) }))} loggedIn={loggedIn} />
 
       {settings.marquee_text ? (
