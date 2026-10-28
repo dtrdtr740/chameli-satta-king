@@ -6,8 +6,8 @@ export const ADMIN_NAV: NavGroup[] = [
   {
     heading: 'Results',
     items: [
-      { href: '/admin', label: 'Dashboard', icon: '🏠', perm: 'view dashboard' },
       { href: '/admin/today-update', label: 'Today Result Update', icon: '⚡', perm: 'update today results' },
+      { href: '/admin', label: 'Dashboard', icon: '🏠', perm: 'view dashboard' },
       { href: '/admin/results', label: 'Game Results', icon: '📊', perm: 'manage game results' },
       { href: '/admin/results/import', label: 'Import Results (Excel)', icon: '📥', perm: 'manage game results', isNew: true },
     ],
@@ -49,3 +49,9 @@ export const ADMIN_NAV: NavGroup[] = [
     ],
   },
 ];
+
+/** The page a user lands on after login: the first page in the sidebar they may open, or null if they may open none. */
+export function landingHref(allows: (perm: string) => boolean): string | null {
+  const item = ADMIN_NAV.flatMap((g) => g.items).find((i) => i.perm && allows(i.perm));
+  return item ? item.href : null;
+}

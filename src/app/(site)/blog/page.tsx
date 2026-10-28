@@ -28,7 +28,7 @@ export default async function BlogIndex({ searchParams }: Props) {
 
   return (
     <div className="section">
-      <h1 className="page-title">Blog</h1>
+      <h1 className="page-title blog-title">Blog</h1>
       {posts.length === 0 ? <p className="center">No blog posts yet.</p> : <BlogCards posts={posts} />}
       {pages > 1 ? (
         <nav className="pager-links" aria-label="Pages">

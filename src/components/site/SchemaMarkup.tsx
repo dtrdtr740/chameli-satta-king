@@ -1,11 +1,17 @@
 /** Renders admin-entered schema.org markup. Accepts raw JSON or full <script type="application/ld+json"> tags. */
-export function SchemaMarkup({ markup }: { markup: string | null }) {
-  if (!markup?.trim()) return null;
+export function schemaBlocks(markup: string | null): string[] {
+  if (!markup?.trim()) return [];
   const blocks: string[] = [];
   const re = /<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi;
   let m: RegExpExecArray | null;
   while ((m = re.exec(markup))) blocks.push(m[1].trim());
   if (!blocks.length) blocks.push(markup.trim());
+  return blocks;
+}
+
+export function SchemaMarkup({ markup }: { markup: string | null }) {
+  const blocks = schemaBlocks(markup);
+  if (!blocks.length) return null;
   return (
     <>
       {blocks.map((json, i) => (

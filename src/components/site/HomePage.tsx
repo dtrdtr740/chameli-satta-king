@@ -27,7 +27,7 @@ function Waiting({ eager }: { eager?: boolean }) {
 }
 
 export async function HomePage({ pageKey, path }: { pageKey: string; path: string }) {
-  const [data, ads, settings, seo, posts, waTop, waAfterLive, waMiddle] = await Promise.all([
+  const [data, ads, settings, seo, posts, waTop, waAfterLive, waMiddle, waAfterChart] = await Promise.all([
     getHomeData(),
     getAds(),
     getSettings(),
@@ -36,6 +36,7 @@ export async function HomePage({ pageKey, path }: { pageKey: string; path: strin
     activeSection('top'),
     activeSection('after_live'),
     activeSection('middle'),
+    activeSection('after_chart'),
   ]);
   const [, month] = data.today.split('-').map(Number);
   const year = data.today.slice(0, 4);
@@ -93,6 +94,8 @@ export async function HomePage({ pageKey, path }: { pageKey: string; path: strin
         <MonthTable games={data.games} data={data} />
         <p className="scroll-hint">मोबाइल पर पूरा चार्ट देखने के लिए left-right scroll करें</p>
       </div>
+
+      <WhatsAppBanner section={waAfterChart} />
 
       {/* This site's featured game (Admin -> Site Settings): its full yearly chart. Its today/yesterday
           result is in the main table above, like every other game. */}

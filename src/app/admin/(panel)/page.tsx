@@ -1,5 +1,7 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { Flash, PageHead, type SP } from '@/components/admin/ui';
+import { landingHref } from '@/components/admin/nav';
 import { assignedGameIds, can, gameScope, requirePermission } from '@/lib/auth';
 import { MANAGES_SHARED } from '@/lib/site';
 import { query, queryOne } from '@/lib/db';
@@ -8,6 +10,12 @@ import { DAY_MS, formatTime12, istDate, istToEpoch } from '@/lib/time';
 export default async function Dashboard({ searchParams }: { searchParams: SP }) {
   const user = await requirePermission();
   const sp = await searchParams;
+  // After login, and for people who may not open the dashboard, go to the first page they may use (Today Result Update first).
+  const landing = landingHref((perm) => can(user, perm));
+  if (landing && landing !== '/admin' && (sp.welcome || !can(user, 'view dashboard'))) {
+    redirect(sp.denied ? `${landing}?denied=1` : landing);
+  }
+  if (!can(user, 'view dashboard')) return null;
   const today = istDate();
   const yesterday = istDate(Date.now() - DAY_MS);
 

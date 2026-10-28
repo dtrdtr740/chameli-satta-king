@@ -1,12 +1,14 @@
 import Link from 'next/link';
+import Script from 'next/script';
 import '../site.css';
 import { RefreshButton } from '@/components/site/AutoRefresh';
+import { SchemaMarkup } from '@/components/site/SchemaMarkup';
 import { SiteNav } from '@/components/site/SiteNav';
 import { query } from '@/lib/db';
 import { getActiveGames } from '@/lib/results';
 import { cookies } from 'next/headers';
 import { SESSION_COOKIE, verifySession } from '@/lib/session';
-import { fillPlaceholders, gameHref, getSettings, uploadUrl } from '@/lib/settings';
+import { fillPlaceholders, ga4Id, gameHref, getSettings, uploadUrl } from '@/lib/settings';
 import { activeSection } from '@/lib/whatsapp';
 import { SITE_THEME } from '@/lib/site';
 
@@ -21,9 +23,20 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     activeSection('floating'),
   ]);
   const logo = uploadUrl(settings.logo);
+  const ga4 = ga4Id(settings.ga4_measurement_id);
 
   return (
     <div className="site" data-theme={SITE_THEME || undefined}>
+      {/* Google Analytics 4 and the site-wide schema are set in Admin -> Site Settings (public pages only, never /admin). */}
+      {ga4 ? (
+        <>
+          <Script src={`https://www.googletagmanager.com/gtag/js?id=${ga4}`} strategy="afterInteractive" />
+          <Script id="ga4-init" strategy="afterInteractive">
+            {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config',${JSON.stringify(ga4)});`}
+          </Script>
+        </>
+      ) : null}
+      <SchemaMarkup markup={fillPlaceholders(settings.site_schema, settings)} />
       <SiteNav games={games.map((g) => ({ name: g.name, href: gameHref(g.slug, settings) }))} loggedIn={loggedIn} />
 
       {settings.marquee_text ? (

@@ -30,10 +30,10 @@ export const SHARED_PERMISSIONS = new Set([
 ]);
 
 /**
- * Colour theme of the public site. '' = default warm theme (Chameli); 'blue' = A7 Satta Wala.
- * Set SITE_THEME=blue on a Netlify site to force it; A7 is also recognised by SITE_KEY=a7 or an a7sattawala SITE_URL.
+ * Colour theme of the public site. '' = default warm theme (Chameli); 'a7' = A7 Satta Wala (dark page, orange brand).
+ * Set SITE_THEME=a7 (or the old value 'blue') on a Netlify site to force it; A7 is also recognised by SITE_KEY=a7 or an a7sattawala SITE_URL.
  */
-export const SITE_THEME: '' | 'blue' =
-  process.env.SITE_THEME?.trim().toLowerCase() === 'blue' || SITE_KEY === 'a7' || /a7sattawala/i.test(process.env.SITE_URL || '')
-    ? 'blue'
+export const SITE_THEME: '' | 'a7' =
+  ['a7', 'blue'].includes(process.env.SITE_THEME?.trim().toLowerCase() || '') || SITE_KEY === 'a7' || /a7sattawala/i.test(process.env.SITE_URL || '')
+    ? 'a7'
     : '';

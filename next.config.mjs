@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
+  // Lets a second local dev server (e.g. the A7 site on port 3001) use its own build folder.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   experimental: {
     serverActions: { bodySizeLimit: '5mb' },
   },

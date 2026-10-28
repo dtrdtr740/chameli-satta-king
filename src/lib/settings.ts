@@ -13,6 +13,10 @@ export type Settings = {
   footer_disclaimer: string;
   copyright_text: string;
   google_site_verification: string;
+  /** Google Analytics 4 measurement ID, e.g. G-XXXXXXXXXX. */
+  ga4_measurement_id: string;
+  /** Site-wide schema.org JSON-LD (every public page), on top of each page's own schema. {site}/{domain}/{year} are replaced. */
+  site_schema: string;
   logo: string;
   /** Slug of a game shown in its own section (with the yearly chart) at the end of this site's home page. */
   featured_game: string;
@@ -30,6 +34,8 @@ export const SETTING_DEFAULTS: Settings = {
   footer_disclaimer: '',
   copyright_text: '© {year} {site}. All Rights Reserved',
   google_site_verification: '',
+  ga4_measurement_id: '',
+  site_schema: '',
   logo: '',
   featured_game: '',
   whatsapp_channel_text: 'व्हाट्सएप पर सुपर फास्ट रिजल्ट देखने के लिए नीचे दिए गए लिंक पर जाएं और चैनल को फॉलो करें।',
@@ -44,6 +50,17 @@ export const getSettings = cache(async (): Promise<Settings> => {
   }
   return out;
 });
+
+/** Search Console verification token from either the bare code or the whole <meta name="google-site-verification" ...> tag. */
+export function googleVerificationToken(raw: string | null | undefined): string {
+  const v = (raw ?? '').trim();
+  return v.match(/content\s*=\s*["']([^"']+)["']/i)?.[1] ?? v;
+}
+
+/** GA4 measurement ID (G-XXXXXXXXXX) from either the bare ID or the whole gtag snippet; '' when none is found. */
+export function ga4Id(raw: string | null | undefined): string {
+  return (raw ?? '').match(/\bG-[A-Z0-9]{4,}\b/i)?.[0].toUpperCase() ?? '';
+}
 
 export function siteUrl(): string {
   return (process.env.SITE_URL || 'http://localhost:3000').replace(/\/$/, '');

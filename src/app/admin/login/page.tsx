@@ -3,7 +3,7 @@ import { LoginForm } from './LoginForm';
 import { getCurrentUser } from '@/lib/auth';
 
 export default async function LoginPage() {
-  if (await getCurrentUser()) redirect('/admin');
+  if (await getCurrentUser()) redirect('/admin?welcome=1');
   return (
     <div className="login-wrap">
       <div className="login-card">

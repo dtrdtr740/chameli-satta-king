@@ -22,7 +22,7 @@ export async function login(_prev: { error?: string } | undefined, fd: FormData)
   }
   await clearFailedLogins(email, ip);
   await startSession(user.id);
-  redirect('/admin');
+  redirect('/admin?welcome=1');
 }
 
 export async function logout() {

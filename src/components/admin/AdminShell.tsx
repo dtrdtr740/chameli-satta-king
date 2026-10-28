@@ -37,6 +37,9 @@ export function AdminShell({
         <Link href="/admin" className="admin-brand">
           <b>SK</b> {siteName}
         </Link>
+        <a className="btn btn-primary visit-home" href="/" target="_blank" rel="noopener">
+          🏠 Visit Home Page
+        </a>
         <nav aria-label="Admin">
           {nav.map((g) => (
             <div key={g.heading}>
@@ -56,9 +59,6 @@ export function AdminShell({
           <small>{user.email}</small>
           <small>{user.role}</small>
           <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-            <a className="btn btn-sm" href="/" target="_blank" rel="noopener">
-              View site
-            </a>
             <form action={logoutAction}>
               <button className="btn btn-sm" type="submit">
                 Log out
@@ -74,6 +74,9 @@ export function AdminShell({
             ☰
           </button>
           <strong>{siteName} Admin</strong>
+          <a className="btn btn-primary btn-sm" href="/" target="_blank" rel="noopener" style={{ marginLeft: 'auto' }}>
+            🏠 Visit Home Page
+          </a>
         </div>
         <main className="admin-main">{children}</main>
       </div>

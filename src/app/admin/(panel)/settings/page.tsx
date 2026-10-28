@@ -4,13 +4,21 @@ import { requirePermission } from '@/lib/auth';
 import { execute } from '@/lib/db';
 import { getActiveGames } from '@/lib/results';
 import { bool, done, fail, str } from '@/lib/form';
-import { SETTING_DEFAULTS, getSettings, uploadUrl, type Settings } from '@/lib/settings';
+import { schemaBlocks } from '@/components/site/SchemaMarkup';
+import { SETTING_DEFAULTS, ga4Id, getSettings, googleVerificationToken, uploadUrl, type Settings } from '@/lib/settings';
 import { deleteUpload, saveImage } from '@/lib/uploads';
 
 const TEXT_KEYS: (keyof Settings)[] = [
   'site_name', 'brand_text', 'marquee_text', 'live_hint_text',
-  'footer_disclaimer', 'copyright_text', 'google_site_verification',
+  'footer_disclaimer', 'copyright_text',
 ];
+
+const SCHEMA_EXAMPLE = `{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "{site}",
+  "url": "{domain}"
+}`;
 
 async function saveSettings(fd: FormData) {
   'use server';
@@ -22,6 +30,24 @@ async function saveSettings(fd: FormData) {
   const featured = str(fd, 'featured_game');
   if (featured && !(await getActiveGames()).some((g) => g.slug === featured)) fail('/admin/settings', 'Choose an active game to feature');
   values.featured_game = featured;
+
+  // Google Search Console: accept the bare code or the whole <meta> tag.
+  values.google_site_verification = googleVerificationToken(str(fd, 'google_site_verification'));
+  // Google Analytics 4: accept the bare G- ID or the whole gtag snippet.
+  const gaRaw = str(fd, 'ga4_measurement_id');
+  const ga4 = ga4Id(gaRaw);
+  if (gaRaw && !ga4) fail('/admin/settings', 'Google Analytics ID must look like G-XXXXXXXXXX');
+  values.ga4_measurement_id = ga4;
+  // Site-wide schema must be valid JSON-LD (raw JSON or <script type="application/ld+json"> tags).
+  const schema = str(fd, 'site_schema');
+  for (const block of schemaBlocks(schema)) {
+    try {
+      JSON.parse(block);
+    } catch {
+      fail('/admin/settings', 'Site-wide schema is not valid JSON. Check commas, quotes and brackets.');
+    }
+  }
+  values.site_schema = schema;
   try {
     const up = await saveImage(fd.get('logo'), 'branding');
     if (up || bool(fd, 'remove_logo')) {
@@ -80,8 +106,19 @@ export default async function SettingsPage({ searchParams }: { searchParams: SP 
           <Field label="Copyright text" htmlFor="copyright_text" hint="{year} and {site} are replaced.">
             <input id="copyright_text" name="copyright_text" className="input" defaultValue={s.copyright_text || SETTING_DEFAULTS.copyright_text} />
           </Field>
-          <Field label="Google site verification code" htmlFor="google_site_verification">
+          <Field
+            label="Google Search Console (GSC) code"
+            htmlFor="google_site_verification"
+            hint='Paste the verification code, or the whole <meta name="google-site-verification" ...> tag from Search Console.'
+          >
             <input id="google_site_verification" name="google_site_verification" className="input" defaultValue={s.google_site_verification} />
+          </Field>
+          <Field
+            label="Google Analytics 4 (GA4) ID"
+            htmlFor="ga4_measurement_id"
+            hint="Measurement ID like G-XXXXXXXXXX (or paste the whole Google tag snippet). Leave empty to turn tracking off."
+          >
+            <input id="ga4_measurement_id" name="ga4_measurement_id" className="input" placeholder="G-XXXXXXXXXX" defaultValue={s.ga4_measurement_id} />
           </Field>
           <Field
             label="Featured game on home page"
@@ -98,6 +135,20 @@ export default async function SettingsPage({ searchParams }: { searchParams: SP 
             </select>
           </Field>
         </div>
+        <Field
+          label="Site-wide schema (JSON-LD)"
+          htmlFor="site_schema"
+          hint="Added to every page of this website, on top of the schema set per page in SEO & Content. Raw JSON or a full script tag of type application/ld+json. {site}, {domain} and {year} are replaced."
+        >
+          <textarea
+            id="site_schema"
+            name="site_schema"
+            className="textarea code"
+            style={{ minHeight: 180 }}
+            placeholder={SCHEMA_EXAMPLE}
+            defaultValue={s.site_schema}
+          />
+        </Field>
         <div className="form-actions">
           <button className="btn btn-primary" type="submit">
             Save settings

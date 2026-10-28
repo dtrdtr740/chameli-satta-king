@@ -43,7 +43,7 @@ export default async function BlogPostPage({ params }: Props) {
   return (
     <article className="section post">
       <SchemaMarkup markup={schema} />
-      <h1 className="page-title">{post.title}</h1>
+      <h1 className="page-title blog-title">{post.title}</h1>
       <p className="post-meta">
         <time>{postDate(post)}</time>
       </p>

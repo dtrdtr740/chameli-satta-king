@@ -7,7 +7,7 @@ import { bool, done, fail, str, strOrNull } from '@/lib/form';
 import { deleteUpload, saveImage } from '@/lib/uploads';
 
 const P = 'manage whatsapp sections';
-const SLOTS = ['top', 'after_live', 'middle', 'floating'];
+const SLOTS = ['top', 'after_live', 'middle', 'after_chart', 'floating'];
 // Built-in images (in /public) that can be picked without uploading.
 const BUILT_IN = ['/join-whatsapp.png', '/whatsapp-logo.webp', '/whatsapp-chat.png'];
 

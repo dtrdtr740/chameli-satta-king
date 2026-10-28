@@ -4,7 +4,7 @@ import { requirePermission } from '@/lib/auth';
 import { uploadUrl } from '@/lib/settings';
 import { SLOT_INFO, getWhatsAppSections, type WhatsAppSlot } from '@/lib/whatsapp';
 
-const ORDER: WhatsAppSlot[] = ['top', 'after_live', 'middle', 'floating'];
+const ORDER: WhatsAppSlot[] = ['top', 'after_live', 'middle', 'after_chart', 'floating'];
 
 export default async function WhatsAppSectionsPage({ searchParams }: { searchParams: SP }) {
   await requirePermission('manage whatsapp sections');

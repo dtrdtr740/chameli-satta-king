@@ -310,22 +310,26 @@ if (removed.affectedRows) console.log(`- removed ${removed.affectedRows} unused 
   if (moved) console.log(`Copied ${moved} uploaded image(s) from disk into the database`);
 }
 
-// The 4 fixed WhatsApp slots (managed in Admin -> WhatsApp Sections). Created once, from the current
+// The 5 fixed WhatsApp slots (managed in Admin -> WhatsApp Sections). Created once, from the current
 // Site Settings, so existing sites keep showing exactly what they showed before.
 {
   const [rows] = await db.query('SELECT `key`, `value` FROM site_settings');
   const s = Object.fromEntries(rows.map((r) => [r.key, r.value ?? '']));
   const channel = s.whatsapp_channel_url || 'https://www.whatsapp.com/channel/0029Vb67katLikgE57Pwhj0T';
-  const number = (s.whatsapp_number || '918168973121').replace(/[^\d]/g, '');
-  const shown = number.startsWith('91') && number.length === 12 ? `+91 ${number.slice(2)}` : `+${number}`;
   const channelText =
     s.whatsapp_channel_text || 'व्हाट्सएप पर सुपर फास्ट रिजल्ट देखने के लिए नीचे दिए गए लिंक पर जाएं और चैनल को फॉलो करें।';
-  const contactText = (s.whatsapp_contact_text || 'WhatsApp: {number}').replace('{number}', shown);
+  // Same content as the live site (chamelisattaking.com): Shanu Bhai contact banners + the channel banner.
+  const LIVE_WA = 'https://wa.me/918171581056';
   const slots = [
-    ['top', 'Top banner (under the logo)', `<p>${channelText}</p>`, '/join-whatsapp.png', channel, 1],
-    ['after_live', 'Below live results', `<p>${contactText}</p>`, '/whatsapp-logo.webp', `https://wa.me/${number}`, 2],
+    ['top', 'Top banner (under the logo)',
+      '<p style="text-align: center;">नमस्कार साथियों<br>बिंदास गेम खेलिए सीधे कंपनी खाईवाल के पास और पाइए 1001% पेमेंट की गारंटी।<br>आपका अपना भाई </p><p style="text-align: center;"><strong>SHANU </strong><strong>BHAI</strong></p>',
+      '/whatsapp-chat.png', LIVE_WA, 1],
+    ['after_live', 'Below live results',
+      '<p style="text-align: center;">सीधे सट्टा कंपनी का No 1 खाईवाल<br>✰✰ SHANU BHAI  ✰✰</p><p style="text-align: center;">     </p><p style="text-align: center;">🎯 पालिका बाजार ---------------- 1:20 PM<br>🎯 प्रयागराज -------------------- 2:00 PM<br>🎯 दिल्ली बाजार ---------------- 3:00 PM<br>🎯 दिल्ली दरबार ---------------- 3:30 PM<br>🎯 श्री गणेश -------------------- 4:30 PM<br>🎯 रूप नगर ---------------------- 5:10 PM<br>🎯 फरीदाबाद -------------------- 5:50 PM<br>🎯 फतेहपुर ---------------------- 7:10 PM<br>🎯 गाज़ियाबाद ------------------ 9:20 PM<br>🎯 नोएडा नाइट ----------------- 10:00 PM<br>🎯 गली --------------------------- 11:50 PM<br>🎯 दिसावर ----------------------- 3:00 AM</p><p style="text-align: center;"><br>जोड़ी रेट 10-------960<br>हरूफ रेट 100-----960<br>✰✰ SHANU BHAI ✰✰<br>Game Play करने के लिये नीचे लिंक पर क्लिक करे</p>',
+      '/whatsapp-chat.png', LIVE_WA, 2],
     ['middle', 'Middle banner', `<p>${channelText}</p>`, '/join-whatsapp.png', channel, 3],
-    ['floating', 'Floating button (bottom right) + Contact page', '', '/whatsapp-logo.webp', `https://wa.me/${number}`, 4],
+    ['after_chart', 'Below result chart', '<p style="text-align: center;">apni game or add dalwane k liye sampark karen</p>', '/whatsapp-chat.png', LIVE_WA, 4],
+    ['floating', 'Floating button (bottom right) + Contact page', '', '/whatsapp-logo.webp', LIVE_WA, 5],
   ];
   let added = 0;
   for (const [slot, title, content, image, link, order] of slots) {
@@ -438,12 +442,22 @@ if (args.has('--seed')) {
     footer_disclaimer: '!! DISCLAIMER:- This is a non-commercial website. Viewing this website is your own risk.',
     copyright_text: '© {year} {site}. All Rights Reserved',
     google_site_verification: '',
+    ga4_measurement_id: '',
+    site_schema: '',
     logo: '',
     section_1_title: '',
     section_2_title: '',
   };
   for (const [key, value] of Object.entries(SETTINGS)) {
     await db.query(`INSERT IGNORE INTO site_settings (\`key\`, \`value\`, updated_at) VALUES (?, ?, NOW())`, [key, value]);
+  }
+  // Google Search Console code per website ('' = main site, Chameli). Only fills it in when empty, so a code set in Admin is never overwritten.
+  const GSC = { '': 'FduG9cif9psz9bRGjUzRoN0xsc1u1plhO1nvkhgBuu8', a7: 'VKrMh1arA854nsGMBEfV1RgSTUuN7Jexna_w8Z2WEV4' };
+  if (GSC[SITE_KEY]) {
+    await db.query(
+      "UPDATE site_settings SET `value` = ?, updated_at = NOW() WHERE `key` = 'google_site_verification' AND (`value` IS NULL OR `value` = '')",
+      [GSC[SITE_KEY]],
+    );
   }
   console.log('Seeded site settings');
 

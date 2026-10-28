@@ -2,7 +2,7 @@ import 'server-only';
 import { cache } from 'react';
 import { query } from './db';
 
-export type WhatsAppSlot = 'top' | 'after_live' | 'middle' | 'floating';
+export type WhatsAppSlot = 'top' | 'after_live' | 'middle' | 'after_chart' | 'floating';
 
 export type WhatsAppSection = {
   slot: WhatsAppSlot;
@@ -20,6 +20,7 @@ export const SLOT_INFO: Record<WhatsAppSlot, { label: string; where: string; has
   top: { label: 'Top banner', where: 'Home page, under the logo', hasContent: true },
   after_live: { label: 'Below live results', where: 'Home page, right after the live result box', hasContent: true },
   middle: { label: 'Middle banner', where: 'Home page, above the result tables', hasContent: true },
+  after_chart: { label: 'Below result chart', where: 'Home page, right after the monthly result chart', hasContent: true },
   floating: { label: 'Floating button', where: 'Every page, bottom-right icon; also the Contact page button', hasContent: false },
 };
 
