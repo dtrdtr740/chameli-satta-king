@@ -320,11 +320,14 @@
 .wa-logo img { width: 80px; height: 80px; display: block; }
 .wa-logo:active { transform: scale(.96); }
 .fab:active { transform: scale(.96); }
+.fab.spinning svg { animation: fab-spin .8s linear infinite; }
+@keyframes fab-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .fab.spinning svg { animation: none; } }
 /* Phones: smaller floating buttons so they cover less of the tables; brand name on one line where it fits. */
 @media (max-width: 640px) {
-  .floaters { bottom: 12px; right: 6px; gap: 8px; }
-  .wa-logo img { width: 54px; height: 54px; }
-  .fab { width: 44px; height: 44px; }
+  .floaters { bottom: 12px; right: 6px; gap: 10px; }
+  .wa-logo img { width: 72px; height: 72px; }
+  .fab { width: 52px; height: 52px; }
   .brand-band a { letter-spacing: 1px; font-size: clamp(22px, 6.4vw, 34px); }
 }
 .contact-card { text-align: center; padding: 16px; font-size: 18px; }
